@@ -9,6 +9,41 @@ import sys
 from glob import iglob
 from astropy.io import fits
 
+class Exptime:
+    def __init__(self):
+        self.exp = []
+        self.cnt = []
+
+def find_in_list(list, val):
+    index = 0
+    found = False
+    for x in list:
+        if x == val:
+            found = True
+            break
+        index = index + 1
+    if found:
+        return index
+    else:
+        return -1
+
+def format_time(num):
+    return str(num)
+
+def secs_to_time(seconds):
+    h = seconds//3600
+    m = (seconds%3600)//60
+    s = (seconds%3600)%60
+    d = ''
+    if h > 0:
+        d = d + format_time(h) + 'h '
+    if m > 0:
+        d = d + format_time(m) + 'm '
+    if s > 0:
+        d = d + format_time(s) + 's '
+    return d.strip()
+
+
 if len(sys.argv) < 2:
     print ("Usage: python fitspy.py {list|move|header|coordinates} [file]")
     print ("  list - list some interesting FITS header info")
@@ -16,8 +51,9 @@ if len(sys.argv) < 2:
     print ("  header - print all FITS heeader values")
     print ("  coordinates - recursively find coordinates from FITS file names")
     print ("  filter - print just FILTER keyword")
+    print ("  summary - generate summary information from FITS files like telescopes, filters and exposure times")
     sys.exit()
-if sys.argv[1] == 'list':
+if sys.argv[1] == 'list' or sys.argv[1] == 'l':
     if len(sys.argv) == 2:
         imgpath = "*.fit"
     else:
@@ -34,7 +70,7 @@ if sys.argv[1] == 'list':
             #str(hdul[0].header['FOCALLEN']) + ' ' +
             #str(hdul[0].header['APTDIA']) + ' ' +
             '')
-elif sys.argv[1] == 'filter':
+elif sys.argv[1] == 'filter' or sys.argv[1] == 'f':
     if len(sys.argv) == 2:
         imgpath = "*.fit"
     else:
@@ -44,7 +80,7 @@ elif sys.argv[1] == 'filter':
     for img in imgfiles:
         hdul = fits.open(img)
         print (img + '  ' + str(hdul[0].header['FILTER']))
-elif sys.argv[1] == 'move':
+elif sys.argv[1] == 'move' or sys.argv[1] == 'm':
     if len(sys.argv) == 2:
         imgpath = "*.fit"
     else:
@@ -64,7 +100,7 @@ elif sys.argv[1] == 'move':
             print ('move ' + img + ' to ' + resol)
         else:
             print ('file ' + img + ' already exists in ' + resol)
-elif sys.argv[1] == 'header':
+elif sys.argv[1] == 'header' or sys.argv[1] == 'h':
     if len(sys.argv) == 2:
         imgpath = "*.fit"
     else:
@@ -76,7 +112,7 @@ elif sys.argv[1] == 'header':
         k = list(hdul[0].header.keys())
         for x in k:
             print (x + '=' + str(hdul[0].header[x]))
-elif sys.argv[1] == 'coordinates':
+elif sys.argv[1] == 'coordinates' or sys.argv[1] == 'c':
     if len(sys.argv) == 2:
         globdir = "."
     else:
@@ -97,7 +133,89 @@ elif sys.argv[1] == 'coordinates':
         else:
             sign = ''
         print(c[0:6] + ' ' + sign + c[7:] + ',', end='')
-         
+
+if sys.argv[1] == 'summary' or sys.argv[1] == 's':
+    if len(sys.argv) == 2:
+        imgpath = "*.fit*"
+    else:
+        imgpath = sys.argv[2]
+    imgfiles = glob.glob(imgpath)
+    datelist = []
+    telescop = []
+    instrume = []
+    filter = []
+    exptime = []
+    totalcnt = 0
+    for img in imgfiles:
+        hdul = fits.open(img)
+        # collect all different dates
+        val = str(hdul[0].header['DATE-OBS'])[0:10]
+        index = find_in_list(datelist, val)
+        if index == -1:
+            datelist.append(val)
+        # collect telecopes and instuments
+        val = str(hdul[0].header['TELESCOP'])
+        index = find_in_list(telescop, val)
+        if index == -1:
+            index = len(telescop)
+            telescop.append(val)
+            instrume.append(str(hdul[0].header['INSTRUME']))
+            print ("Add telescope " + telescop[index] + " and instrument " + instrume[index])
+        # collect filters
+        val = str(hdul[0].header['FILTER'])
+        index = find_in_list(filter, val)
+        if index == -1:
+            index = len(filter)
+            filter.append(val)
+            exptime.append(Exptime())
+            print ("Add filter " + filter[index])
+        # collect exposure time for each filter
+        # different exposure times are collected separately
+        val = int(float(str(hdul[0].header['EXPTIME'])))
+        et = exptime[index]
+        index2 = find_in_list(et.exp, val)
+        if index2 == -1:
+            index2 = len(et.exp)
+            et.exp.append(val)
+            et.cnt.append(0)
+            print ("Add exptime " + str(val) + " for filter " + filter[index])
+        et.cnt[index2] = et.cnt[index2] + 1
+        totalcnt = totalcnt + 1
+    print ("Dates:")
+    index = 0
+    datelist.sort()
+    for x in datelist:
+        print (x)
+        index = index + 1
+    print ("Data from Telescope Live OneClick Observations")
+    print ("Data is from " + str(index) + " different nights between " +
+           datelist[0] + " and " + datelist[len(datelist)-1])
+    print ("Telescopes and cameras:")
+    index = 0
+    for x in telescop:
+        print(x + ', ' + instrume[index])
+        index = index + 1
+    print ("Filters:")
+    index = 0
+    totalexptime = 0
+    for x in filter:
+        et = exptime[index]
+        index2 = 0
+        filterexptime = 0
+        filtercnt = 0
+        for y in et.exp:
+            subexptime = et.cnt[index2] * y
+            filtercnt = filtercnt + et.cnt[index2]
+            filterexptime = filterexptime + subexptime
+            totalexptime = totalexptime + subexptime
+            print(x + ' ' + str(et.cnt[index2]) + ' x ' + str(y) + 's (' + secs_to_time(subexptime) + ')')
+            index2 = index2 + 1
+        if len(et.exp) > 1:
+            print(x + ' ' + str(filtercnt) + ' images ' + secs_to_time(filterexptime))
+        index = index + 1
+    print ("Total " + str(totalcnt) + " images, exposure time " + secs_to_time(totalexptime))
+    print ("Processed in PixInsight and Photoshop")
+
 else:
     print ("Bad argument " + str(sys.argv[1]))
     print ("Usage: python fitspy.py {list|move|header|coordinates} [file]")
