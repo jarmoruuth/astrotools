@@ -43,6 +43,24 @@ def secs_to_time(seconds):
         d = d + format_time(s) + 's '
     return d.strip()
 
+telescopes = [ 
+    [ "AUS-2", "Takahashi FSQ-106ED", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "SPA-1", "Takahashi FSQ-106ED", "FLI PL16083", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "SPA-2", "Officina Stellare ProRC 700", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
+    [ "SPA-3", "Takahashi FSQ-106EDX4", "FLI PL16083", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "CHI-1", "Planewave CDK24", "FLI ProLine PL9000", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
+    [ "CHI-2", "ASA 500N", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "CHI-3", "ASA RC-1000AZ", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
+    [ "CHI-4", "ASA 500N", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "CHI-5", "Nikon 200 F/2", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "CHI-6", "Officina Stellare RH200", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ]
+]
+
+def get_telescope(txt):
+    for x in telescopes:
+        if x[0] == txt:
+            return x[1] + ' (' + txt + ')'
+    return txt
 
 if len(sys.argv) < 2:
     print ("Usage: python fitspy.py {list|move|header|coordinates} [file]")
@@ -188,12 +206,15 @@ if sys.argv[1] == 'summary' or sys.argv[1] == 's':
         print (x)
         index = index + 1
     print ("Data from Telescope Live OneClick Observations")
-    print ("Data is from " + str(index) + " different nights between " +
-           datelist[0] + " and " + datelist[len(datelist)-1])
+    if len(datelist) == 1:
+        print ("Images are taken at " + datelist[0])
+    else:
+        print ("Images are taken at " + str(index) + " different nights between " +
+                datelist[0] + " and " + datelist[len(datelist)-1])
     print ("Telescopes and cameras:")
     index = 0
     for x in telescop:
-        print(x + ', ' + instrume[index])
+        print(get_telescope(x) + ', ' + instrume[index])
         index = index + 1
     print ("Filters:")
     index = 0
