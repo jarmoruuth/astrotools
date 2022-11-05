@@ -8,6 +8,7 @@ import os
 import sys
 from glob import iglob
 from astropy.io import fits
+from datetime import datetime
 
 class Exptime:
     def __init__(self):
@@ -70,7 +71,12 @@ if len(sys.argv) < 2:
     print ("  coordinates - recursively find coordinates from FITS file names")
     print ("  filter - print just FILTER keyword")
     print ("  summary - generate summary information from FITS files like telescopes, filters and exposure times")
+    print ("  unprocessed - find directories which are unprocessed")
     sys.exit()
+
+#
+# list
+#
 if sys.argv[1] == 'list' or sys.argv[1] == 'l':
     if len(sys.argv) == 2:
         imgpath = "*.fit"
@@ -88,6 +94,10 @@ if sys.argv[1] == 'list' or sys.argv[1] == 'l':
             #str(hdul[0].header['FOCALLEN']) + ' ' +
             #str(hdul[0].header['APTDIA']) + ' ' +
             '')
+
+#
+# filter
+#
 elif sys.argv[1] == 'filter' or sys.argv[1] == 'f':
     if len(sys.argv) == 2:
         imgpath = "*.fit"
@@ -98,6 +108,10 @@ elif sys.argv[1] == 'filter' or sys.argv[1] == 'f':
     for img in imgfiles:
         hdul = fits.open(img)
         print (img + '  ' + str(hdul[0].header['FILTER']))
+
+#
+# move
+#
 elif sys.argv[1] == 'move' or sys.argv[1] == 'm':
     if len(sys.argv) == 2:
         imgpath = "*.fit"
@@ -118,6 +132,10 @@ elif sys.argv[1] == 'move' or sys.argv[1] == 'm':
             print ('move ' + img + ' to ' + resol)
         else:
             print ('file ' + img + ' already exists in ' + resol)
+
+#
+# header
+#
 elif sys.argv[1] == 'header' or sys.argv[1] == 'h':
     if len(sys.argv) == 2:
         imgpath = "*.fit"
@@ -130,6 +148,10 @@ elif sys.argv[1] == 'header' or sys.argv[1] == 'h':
         k = list(hdul[0].header.keys())
         for x in k:
             print (x + '=' + str(hdul[0].header[x]))
+
+#
+# coordinates
+#
 elif sys.argv[1] == 'coordinates' or sys.argv[1] == 'c':
     if len(sys.argv) == 2:
         globdir = "."
@@ -152,13 +174,16 @@ elif sys.argv[1] == 'coordinates' or sys.argv[1] == 'c':
             sign = ''
         print(c[0:6] + ' ' + sign + c[7:] + ',', end='')
 
-if sys.argv[1] == 'summary' or sys.argv[1] == 's':
+#
+# summary
+#
+elif sys.argv[1] == 'summary' or sys.argv[1] == 's':
     if len(sys.argv) == 2:
         imgpath = "*.fit*"
     else:
         imgpath = sys.argv[2]
     imgfiles = glob.glob(imgpath)
-    datelist = []
+    datetimelist = []
     telescop = []
     instrume = []
     filter = []
@@ -167,10 +192,10 @@ if sys.argv[1] == 'summary' or sys.argv[1] == 's':
     for img in imgfiles:
         hdul = fits.open(img)
         # collect all different dates
-        val = str(hdul[0].header['DATE-OBS'])[0:10]
-        index = find_in_list(datelist, val)
+        val = str(hdul[0].header['DATE-OBS'][0:19])
+        index = find_in_list(datetimelist, val)
         if index == -1:
-            datelist.append(val)
+            datetimelist.append(val)
         # collect telecopes and instuments
         val = str(hdul[0].header['TELESCOP'])
         index = find_in_list(telescop, val)
@@ -200,18 +225,32 @@ if sys.argv[1] == 'summary' or sys.argv[1] == 's':
         et.cnt[index2] = et.cnt[index2] + 1
         totalcnt = totalcnt + 1
     print ("Dates:")
+    datetimelist.sort()
+    datelist = []
     index = 0
-    datelist.sort()
+    for x in datetimelist:
+        dt = datetime.strptime(x, '%Y-%m-%dT%H:%M:%S')
+        if index == 0:
+            datelist.append(x[0:10])
+        else:
+            diff_dt = dt - prev_dt
+            diff_secs = diff_dt.total_seconds()
+            if diff_secs > 12 * 60 * 60 and find_in_list(datelist, x[0:10]) == -1:
+                datelist.append(x[0:10])
+        prev_dt = dt
+        index = index + 1
+    index = 0
     for x in datelist:
         print (x)
         index = index + 1
+    print ("--")
     print ("Data from Telescope Live OneClick Observations")
     if len(datelist) == 1:
         print ("Images are taken at " + datelist[0])
     else:
         print ("Images are taken at " + str(index) + " different nights between " +
                 datelist[0] + " and " + datelist[len(datelist)-1])
-    print ("Telescopes and cameras:")
+    print ("Telescope and camera:")
     index = 0
     for x in telescop:
         print(get_telescope(x) + ', ' + instrume[index])
@@ -235,7 +274,59 @@ if sys.argv[1] == 'summary' or sys.argv[1] == 's':
             print(x + ' ' + str(filtercnt) + ' images ' + secs_to_time(filterexptime))
         index = index + 1
     print ("Total " + str(totalcnt) + " images, exposure time " + secs_to_time(totalexptime))
-    print ("Processed in PixInsight and Photoshop")
+    print ("--")
+    print (str(int(totalexptime/300)) + "x300s, " + str(int(totalexptime/600)) + "x600s")
+
+#
+# unprocessed
+#
+elif sys.argv[1] == 'unprocessed' or sys.argv[1] == 'u':
+    if len(sys.argv) == 2:
+        globdir = "."
+        startpos = 2
+    else:
+        globdir = sys.argv[2]
+        startpos = 0
+    rootdirs = glob.glob(globdir + '/*')
+    nofits_list = []
+    nojpg_someprocessing_list = []
+    nojpg_list = []
+    jpg_list = []
+    for rootdir in rootdirs:
+        if os.path.isdir(rootdir):
+            fits = glob.glob(rootdir + "/*.fit*")
+            if len(fits) == 0:
+                nofits_list.append(rootdir)
+                continue
+            jpgs = glob.glob(rootdir + "/*.jpg")
+            if len(jpgs) == 0:
+                processed = glob.glob(rootdir + "/AutoProcessed")
+                if len(processed) > 0:
+                    nojpg_someprocessing_list.append(rootdir)
+                    continue
+                processed = glob.glob(rootdir + "/*.tif*")
+                if len(processed) > 0:
+                    nojpg_someprocessing_list.append(rootdir)
+                    continue
+                processed = glob.glob(rootdir + "/*.xisf")
+                if len(processed) > 0:
+                    nojpg_someprocessing_list.append(rootdir)
+                    continue
+                nojpg_list.append(rootdir)
+            else:
+                jpg_list.append(rootdir)
+    print("JPG files:")
+    for x in jpg_list:
+        print ('  ' + x[startpos:])
+    print("No FITS files:")
+    for x in nofits_list:
+        print ('  ' + x[startpos:])
+    print("No JPG files but some processing done:")
+    for x in nojpg_someprocessing_list:
+        print ('  ' + x[startpos:])
+    print("No JPG files or processing:")
+    for x in nojpg_list:
+        print ('  ' + x[startpos:])
 
 else:
     print ("Bad argument " + str(sys.argv[1]))
