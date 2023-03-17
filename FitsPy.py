@@ -54,7 +54,18 @@ telescopes = [
     [ "CHI-3", "ASA RC-1000AZ", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
     [ "CHI-4", "ASA 500N", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
     [ "CHI-5", "Nikon 200 F/2", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-6", "Officina Stellare RH200", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ]
+    [ "CHI-6", "Officina Stellare RH200", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+
+    [ "AUS-2-CMOS", "Takahashi FSQ-106ED", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "SPA-1-CMOS", "Takahashi FSQ-106ED", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "SPA-2-CMOS", "Officina Stellare ProRC 700", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
+    [ "SPA-3-CMOS", "Takahashi FSQ-106EDX4", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "CHI-1-CMOS", "Planewave CDK24", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
+    [ "CHI-2-CMOS", "ASA 500N", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "CHI-3-CMOS", "ASA RC-1000AZ", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
+    [ "CHI-4-CMOS", "ASA 500N", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "CHI-5-CMOS", "Nikon 200 F/2", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "CHI-6-CMOS", "Officina Stellare RH200", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ]
 ]
 
 def get_telescope(txt):
@@ -196,13 +207,19 @@ elif sys.argv[1] == 'summary' or sys.argv[1] == 's':
         index = find_in_list(datetimelist, val)
         if index == -1:
             datetimelist.append(val)
-        # collect telecopes and instuments
-        val = str(hdul[0].header['TELESCOP'])
+        # collect telecopes and instruments
+        try:
+            val = str(hdul[0].header['TELESCOP'])
+        except:
+            val = 'unknown'
         index = find_in_list(telescop, val)
         if index == -1:
             index = len(telescop)
             telescop.append(val)
-            instrume.append(str(hdul[0].header['INSTRUME']))
+            try:
+                instrume.append(str(hdul[0].header['INSTRUME']))
+            except:
+                instrume.append('unknown')
             print ("Add telescope " + telescop[index] + " and instrument " + instrume[index])
         # collect filters
         val = str(hdul[0].header['FILTER'])
