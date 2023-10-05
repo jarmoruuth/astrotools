@@ -15,6 +15,33 @@ class Exptime:
         self.exp = []
         self.cnt = []
 
+class Datefilters:
+    def __init__(self):
+        self.date = ''
+        self.filter = ''
+        self.exptime = []
+        self.cnt = []
+
+# Astrobin filter ids: H 4499, OIII 4505, SII 4511, L 4544, R 4549, G 4537, B 4531
+def filter_id(filter):
+    filter = filter[0:1].upper()
+    if filter == 'L':
+        return 4544
+    elif filter == 'R':
+        return 4549
+    elif filter == 'G':
+        return 4537
+    elif filter == 'B':
+        return 4531
+    elif filter == 'H':
+        return 4499
+    elif filter == 'O':
+        return 4505
+    elif filter == 'S':
+        return 4511
+    else:
+        return 0
+
 def find_in_list(list, val):
     index = 0
     found = False
@@ -45,33 +72,33 @@ def secs_to_time(seconds):
     return d.strip()
 
 telescopes = [ 
-    [ "AUS-2", "Takahashi FSQ-106ED", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "SPA-1", "Takahashi FSQ-106ED", "FLI PL16083", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "SPA-2", "Officina Stellare ProRC 700", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
-    [ "SPA-3", "Takahashi FSQ-106EDX4", "FLI PL16083", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-1", "Planewave CDK24", "FLI ProLine PL9000", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
-    [ "CHI-2", "ASA 500N", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-3", "ASA RC-1000AZ", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
-    [ "CHI-4", "ASA 500N", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-5", "Nikon 200 F/2", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-6", "Officina Stellare RH200", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
+    [ "AUS-2", "Takahashi FSQ-106ED", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "Heaven's Mirror Observatory, Australia" ],
+    [ "SPA-1", "Takahashi FSQ-106ED", "FLI PL16083", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "IC Astronomy Observatory, Spain" ],
+    [ "SPA-2", "Officina Stellare ProRC 700", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i", "IC Astronomy Observatory, Spain" ],
+    [ "SPA-3", "Takahashi FSQ-106EDX4", "FLI PL16083", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "IC Astronomy Observatory, Spain" ],
+    [ "CHI-1", "Planewave CDK24", "FLI ProLine PL9000", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i", "El Sauce Observatory, Chile" ],
+    [ "CHI-2", "ASA 500N", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "El Sauce Observatory, Chile"  ],
+    [ "CHI-3", "ASA RC-1000AZ", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i", "El Sauce Observatory, Chile"  ],
+    [ "CHI-4", "ASA 500N", "FLI PL16803", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "El Sauce Observatory, Chile"  ],
+    [ "CHI-5", "Nikon 200 F/2", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "El Sauce Observatory, Chile"  ],
+    [ "CHI-6", "Officina Stellare RH200", "FLI ML16200", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "El Sauce Observatory, Chile"  ],
 
-    [ "AUS-2-CMOS", "Takahashi FSQ-106ED", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "SPA-1-CMOS", "Takahashi FSQ-106ED", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "SPA-2-CMOS", "Officina Stellare ProRC 700", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
-    [ "SPA-3-CMOS", "Takahashi FSQ-106EDX4", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-1-CMOS", "Planewave CDK24", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
-    [ "CHI-2-CMOS", "ASA 500N", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-3-CMOS", "ASA RC-1000AZ", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i" ],
-    [ "CHI-4-CMOS", "ASA 500N", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-5-CMOS", "Nikon 200 F/2", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ],
-    [ "CHI-6-CMOS", "Officina Stellare RH200", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)" ]
+    [ "AUS-2-CMOS", "Takahashi FSQ-106ED", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "Heaven's Mirror Observatory, Australia", "El Sauce Observatory, Chile"  ],
+    [ "SPA-1-CMOS", "Takahashi FSQ-106ED", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "IC Astronomy Observatory, Spain", "El Sauce Observatory, Chile"  ],
+    [ "SPA-2-CMOS", "Officina Stellare ProRC 700", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i", "IC Astronomy Observatory, Spain", "El Sauce Observatory, Chile"  ],
+    [ "SPA-3-CMOS", "Takahashi FSQ-106EDX4", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "IC Astronomy Observatory, Spain", "El Sauce Observatory, Chile"  ],
+    [ "CHI-1-CMOS", "Planewave CDK24", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i", "El Sauce Observatory, Chile"  ],
+    [ "CHI-2-CMOS", "ASA 500N", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "El Sauce Observatory, Chile"  ],
+    [ "CHI-3-CMOS", "ASA RC-1000AZ", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm), Sloan r, Sloan g, Sloan i", "El Sauce Observatory, Chile"  ],
+    [ "CHI-4-CMOS", "ASA 500N", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "El Sauce Observatory, Chile"  ],
+    [ "CHI-5-CMOS", "Nikon 200 F/2", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "El Sauce Observatory, Chile"  ],
+    [ "CHI-6-CMOS", "Officina Stellare RH200", "QHY 600M", "Astrodon LRGB 2GEN, Ha (3nm), SII (3nm), OIII (3nm)", "El Sauce Observatory, Chile"  ]
 ]
 
 def get_telescope(txt):
     for x in telescopes:
         if x[0] == txt:
-            return x[1] + ' (' + txt + ')'
+            return x[1] + ' (' + txt + ') ' + x[4]
     return txt
 
 if len(sys.argv) < 2:
@@ -195,23 +222,27 @@ elif sys.argv[1] == 'summary' or sys.argv[1] == 's':
         imgpath = sys.argv[2]
     imgfiles = glob.glob(imgpath)
     datetimelist = []
+    datelist = []
     telescop = []
     instrume = []
+    location = []
     filter = []
     exptime = []
+    datefilters = []
     totalcnt = 0
     for img in imgfiles:
         hdul = fits.open(img)
         # collect all different dates
-        val = str(hdul[0].header['DATE-OBS'][0:19])
-        index = find_in_list(datetimelist, val)
-        if index == -1:
-            datetimelist.append(val)
+        datetimeobs = str(hdul[0].header['DATE-OBS'][0:19])
+        dateobs = str(hdul[0].header['DATE-OBS'][0:10])
+        datetimeobsindex = find_in_list(datetimelist, datetimeobs)
+        if datetimeobsindex == -1:
+            datetimelist.append(datetimeobs)
         # collect telecopes and instruments
         try:
             val = str(hdul[0].header['TELESCOP'])
         except:
-            val = 'unknown'
+            val = 'TELESCOP unknown'
         index = find_in_list(telescop, val)
         if index == -1:
             index = len(telescop)
@@ -219,27 +250,52 @@ elif sys.argv[1] == 'summary' or sys.argv[1] == 's':
             try:
                 instrume.append(str(hdul[0].header['INSTRUME']))
             except:
-                instrume.append('unknown')
+                instrume.append('INSTRUME unknown')
             print ("Add telescope " + telescop[index] + " and instrument " + instrume[index])
         # collect filters
-        val = str(hdul[0].header['FILTER'])
-        index = find_in_list(filter, val)
+        filterval = str(hdul[0].header['FILTER'])
+        index = find_in_list(filter, filterval)
         if index == -1:
             index = len(filter)
-            filter.append(val)
+            filter.append(filterval)
             exptime.append(Exptime())
             print ("Add filter " + filter[index])
         # collect exposure time for each filter
         # different exposure times are collected separately
-        val = int(float(str(hdul[0].header['EXPTIME'])))
+        exptimeval = int(float(str(hdul[0].header['EXPTIME'])))
         et = exptime[index]
-        index2 = find_in_list(et.exp, val)
+        index2 = find_in_list(et.exp, exptimeval)
         if index2 == -1:
             index2 = len(et.exp)
-            et.exp.append(val)
+            et.exp.append(exptimeval)
             et.cnt.append(0)
-            print ("Add exptime " + str(val) + " for filter " + filter[index])
+            print ("Add exptime " + str(exptimeval) + " for filter " + filter[index])
         et.cnt[index2] = et.cnt[index2] + 1
+        # collect exptime for each date and filter
+        dateobsindex = find_in_list(datelist, dateobs)
+        if dateobsindex == -1:
+            datelist.append(dateobs)
+            datefilters.append([])
+        # find filter in datefilters
+        df = datefilters[dateobsindex]
+        index = 0
+        for x in df:
+            if x.filter == filterval:
+                break
+            index = index + 1
+        if index == len(df):
+            df.append(Datefilters())
+            df[index].filter = filterval
+            df[index].exptime = []
+            df[index].cnt = []
+        # record exposure time for this filter
+        index2 = find_in_list(df[index].exptime, exptimeval)
+        if index2 == -1:
+            index2 = len(df[index].exptime)
+            df[index].exptime.append(exptimeval)
+            df[index].cnt.append(0)
+        df[index].cnt[index2] = df[index].cnt[index2] + 1
+        hdul.close()
         totalcnt = totalcnt + 1
     print ("Dates:")
     datetimelist.sort()
@@ -261,16 +317,52 @@ elif sys.argv[1] == 'summary' or sys.argv[1] == 's':
         print (x)
         index = index + 1
     print ("--")
+    print ("Filter exposure times for each day:")
+    index = 0
+    for x in datelist:
+        print (x + ' ', end='')
+        df = datefilters[index]
+        index2 = 0
+        for y in df:
+            print (y.filter + ' ', end='')
+            index3 = 0
+            for z in y.exptime:
+                print (str(y.cnt[index3]) + 'x' + str(z) + 's ', end='')
+                index3 = index3 + 1
+            index2 = index2 + 1
+        print ('')
+        index = index + 1
+    print ("--")
+    # Astrobin .csv format output
+    index = 0
+    print ("date,filter,number,duration")
+    for x in datelist:
+        df = datefilters[index]
+        index2 = 0
+        for y in df:
+            index3 = 0
+            for z in y.exptime:
+                print (x + ',' + str(filter_id(y.filter)) + ',' + str(y.cnt[index3]) + ',' + str(z))
+                index3 = index3 + 1
+            index2 = index2 + 1
+        index = index + 1
+    print ("--")
     print ("Data from Telescope Live OneClick Observations")
+    print ("Processing: PixInsight (with AutoIntegrate.js), Photoshop, RC Astro tools")
     if len(datelist) == 1:
         print ("Images are taken at " + datelist[0])
     else:
         print ("Images are taken at " + str(index) + " different nights between " +
                 datelist[0] + " and " + datelist[len(datelist)-1])
-    print ("Telescope and camera:")
+    print ("Telescope:")
     index = 0
     for x in telescop:
-        print(get_telescope(x) + ', ' + instrume[index])
+        print(get_telescope(x))
+        index = index + 1
+    print ("Camera:")
+    index = 0
+    for x in telescop:
+        print(instrume[index])
         index = index + 1
     print ("Filters:")
     index = 0
