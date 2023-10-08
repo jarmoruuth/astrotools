@@ -2,6 +2,27 @@
 # Other requirements:
 #   NumPy - pip install numpy
 #   AstroPy - pip install astropy --no-deps
+#
+# Args:
+#   list, l - list some interesting FITS header info
+#   move, m - move files to XRESxYRES directory, directory is created automatically
+#   header, h - print all FITS heeader values
+#   coordinates, c - recursively find coordinates from FITS file names
+#   filter, f - print just FILTER keyword
+#   summary, s - generate summary information from FITS files like telescopes, filters and exposure times
+#   unprocessed, u - find directories which are unprocessed
+#   decompress, d - decompress FITS images so they can be loaded into PixInsight
+#
+# Example:
+#   python fitspy.py list *.fit
+#   python fitspy.py move *.fit
+#   python fitspy.py header *.fit
+#   python fitspy.py coordinates
+#   python fitspy.py filter *.fit
+#   python fitspy.py summary *.fit
+#   python fitspy.py unprocessed
+#   python fitspy.py decompress *.fit
+#
 
 import glob
 import os
@@ -436,6 +457,35 @@ elif sys.argv[1] == 'unprocessed' or sys.argv[1] == 'u':
     print("No JPG files or processing:")
     for x in nojpg_list:
         print ('  ' + x[startpos:])
+
+#
+# decompress fits files
+#
+elif sys.argv[1] == 'decompress' or sys.argv[1] == 'd':
+    if len(sys.argv) == 2:
+        imgpath = "*.fit*"
+    else:
+        imgpath = sys.argv[2]
+    imgfiles = glob.glob(imgpath)
+    for img in imgfiles:
+        # skip if image name starts with dc_
+        if img[0:3] == 'dc_':
+            continue
+        # check if file alread exists
+        if os.path.isfile('dc_'+ img):
+            print ("File " + 'dc_'+ img + " already exists")
+        else:
+            print ("Open " + img)
+            hdul = fits.open(img)
+            # Extract the compressed data
+            compressed_data = hdul[1].data
+            # Decompress the data
+            decompressed_data = fits.CompImageHDU(compressed_data).data
+            # Save the decompressed data to a new FITS file
+            hdu = fits.PrimaryHDU(decompressed_data)
+            hdu.writeto('dc_'+ img)
+            hdul.close()
+            print ("Decompressed to " + 'dc_'+ img)
 
 else:
     print ("Bad argument " + str(sys.argv[1]))
