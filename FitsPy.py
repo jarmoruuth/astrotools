@@ -138,7 +138,7 @@ if len(sys.argv) < 2:
 #
 if sys.argv[1] == 'list' or sys.argv[1] == 'l':
     if len(sys.argv) == 2:
-        imgpath = "*.fit"
+        imgpath = "*.fit*"
     else:
         imgpath = sys.argv[2]
     imgfiles = glob.glob(imgpath)
@@ -159,7 +159,7 @@ if sys.argv[1] == 'list' or sys.argv[1] == 'l':
 #
 elif sys.argv[1] == 'filter' or sys.argv[1] == 'f':
     if len(sys.argv) == 2:
-        imgpath = "*.fit"
+        imgpath = "*.fit*"
     else:
         imgpath = sys.argv[2]
     imgfiles = glob.glob(imgpath)
@@ -173,7 +173,7 @@ elif sys.argv[1] == 'filter' or sys.argv[1] == 'f':
 #
 elif sys.argv[1] == 'move' or sys.argv[1] == 'm':
     if len(sys.argv) == 2:
-        imgpath = "*.fit"
+        imgpath = "*.fit*"
     else:
         imgpath = sys.argv[2]
     imgfiles = glob.glob(imgpath)
@@ -197,12 +197,13 @@ elif sys.argv[1] == 'move' or sys.argv[1] == 'm':
 #
 elif sys.argv[1] == 'header' or sys.argv[1] == 'h':
     if len(sys.argv) == 2:
-        imgpath = "*.fit"
+        imgpath = "*.fit*"
     else:
         imgpath = sys.argv[2]
     imgfiles = glob.glob(imgpath)
     imglist = []
     for img in imgfiles:
+        print (img)
         hdul = fits.open(img)
         k = list(hdul[0].header.keys())
         for x in k:
