@@ -526,15 +526,25 @@ elif sys.argv[1] == 'radecfix' or sys.argv[1] == 'r':
             hours = int(ra_deg)
             mins = int((ra_deg - decimal.Decimal(hours))*60) 
             secs = ((ra_deg - decimal.Decimal(hours))*60 - decimal.Decimal(mins))*60
+            secs_str = "{:.2f}".format(secs)
+            if secs < 10:
+                secs_str = '0' + secs_str
             if decimal.Decimal(ra_split[0]) < 0:
                 hours = -hours
-            ra2 = str(hours) + ' ' + str(mins) + ' ' + "{:.2f}".format(secs)
+
+            ra2 = str(hours) + ' ' + "{:02d}".format(mins) + ' ' + secs_str
+
             hours = int(dec_deg)
             mins = int((dec_deg - decimal.Decimal(hours))*60) 
             secs = ((dec_deg - decimal.Decimal(hours))*60 - decimal.Decimal(mins))*60
+            secs_str = "{:.2f}".format(secs)
+            if secs < 10:
+                secs_str = '0' + secs_str
             if decimal.Decimal(dec_split[0]) < 0:
                 hours = -hours
-            dec2 = str(hours) + ' ' + str(mins) + ' ' + "{:.2f}".format(secs)
+
+            dec2 = str(hours) + ' ' + "{:02d}".format(mins) + ' ' + secs_str
+
             # Print the original and fixed values
             print ("Original: " + ra + ' ' + dec)
             print ("Fixed:    " + ra2 + ' ' + dec2)
@@ -551,7 +561,9 @@ elif sys.argv[1] == 'radecfix' or sys.argv[1] == 'r':
     print ("Summary:")
     if len(radecfix_list) > 0:
         for x in radecfix_list:
-            print (x[0] + ':' + x[1] + ', ' + x[2] + ' -> ' + x[3] + ', ' + x[4])
+            print (x[0])
+            print ('  ' + x[1] + ', ' + x[2] + ' ->')
+            print ('  ' + x[3] + ', ' + x[4])
     else:
         print ("No files needed fixing")
 else:
