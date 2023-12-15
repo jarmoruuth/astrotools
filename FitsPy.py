@@ -494,6 +494,7 @@ elif sys.argv[1] == 'decompress' or sys.argv[1] == 'd':
 # Fix ra/dec values in files
 #
 elif sys.argv[1] == 'radecfix' or sys.argv[1] == 'r':
+    radecfix_list = []
     if len(sys.argv) == 2:
         imgpath = "*.fit*"
     else:
@@ -536,7 +537,9 @@ elif sys.argv[1] == 'radecfix' or sys.argv[1] == 'r':
             dec2 = str(hours) + ' ' + str(mins) + ' ' + "{:.2f}".format(secs)
             # Print the original and fixed values
             print ("Original: " + ra + ' ' + dec)
-            print ("Fixed: " + ra2 + ' ' + dec2)
+            print ("Fixed:    " + ra2 + ' ' + dec2)
+            if ra != ra2 or dec != dec2:
+                radecfix_list.append([img, ra, dec, ra2, dec2])
             # Change the RA and DEC values
             hdul[0].header['OBJCTRA'] = ra2
             hdul[0].header['OBJCTDEC'] = dec2
@@ -544,7 +547,13 @@ elif sys.argv[1] == 'radecfix' or sys.argv[1] == 'r':
             hdul.writeto('rdf_'+ img)
             hdul.close()
             print ("Radec fixed to " + 'rdf_'+ img)
-
+    print ("--")
+    print ("Summary:")
+    if len(radecfix_list) > 0:
+        for x in radecfix_list:
+            print (x[0] + ':' + x[1] + ', ' + x[2] + ' -> ' + x[3] + ', ' + x[4])
+    else:
+        print ("No files needed fixing")
 else:
     print ("Bad argument " + str(sys.argv[1]))
     print ("Usage: python fitspy.py {list|move|header|filter|coordinates|summary|radecfix} [file]")
