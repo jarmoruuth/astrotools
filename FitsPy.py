@@ -1,7 +1,7 @@
 # This tool needs Python 3
 # Other requirements:
 #   NumPy - pip install numpy
-#   AstroPy - pip install astropy --no-deps
+#   AstroPy - pip install astropy [--no-deps]
 #
 # Args:
 #   list, l - list some interesting FITS header info
@@ -22,11 +22,13 @@
 #   python fitspy.py summary *.fit
 #   python fitspy.py unprocessed
 #   python fitspy.py decompress *.fit
+#   python fitspy.py radecfix *.fit
 #
 
 import glob
 import os
 import sys
+import decimal
 from glob import iglob
 from astropy.io import fits
 from datetime import datetime
@@ -488,7 +490,62 @@ elif sys.argv[1] == 'decompress' or sys.argv[1] == 'd':
             hdul.close()
             print ("Decompressed to " + 'dc_'+ img)
 
+#
+# Fix ra/dec values in files
+#
+elif sys.argv[1] == 'radecfix' or sys.argv[1] == 'r':
+    if len(sys.argv) == 2:
+        imgpath = "*.fit*"
+    else:
+        imgpath = sys.argv[2]
+    imgfiles = glob.glob(imgpath)
+    for img in imgfiles:
+        # skip if image name starts with rdf_
+        if img[0:4] == 'rdf_':
+            continue
+        # check if file alread exists
+        if os.path.isfile('rdf_'+ img):
+            print ("File " + 'rdf_'+ img + " already exists")
+        else:
+            print ("Open " + img)
+            hdul = fits.open(img)
+            # Read FITS keywords RA and DEC
+            ra = hdul[0].header['OBJCTRA']
+            dec = hdul[0].header['OBJCTDEC']
+            # Convert RA and DEC to degrees
+            ra_split = ra.split(' ') 
+            #print (ra_split)
+            ra_deg = abs(decimal.Decimal(ra_split[0])) + (decimal.Decimal(ra_split[1])*60 + decimal.Decimal(ra_split[2]))/3600
+            #print (ra_deg)
+            dec_split = dec.split(' ')
+            #print (dec_split)
+            dec_deg = abs(decimal.Decimal(dec_split[0])) + (decimal.Decimal(dec_split[1])*60 + decimal.Decimal(dec_split[2]))/3600
+            #print (dec_deg)
+            # Convert RA and DEC back to strings
+            hours = int(ra_deg)
+            mins = int((ra_deg - decimal.Decimal(hours))*60) 
+            secs = ((ra_deg - decimal.Decimal(hours))*60 - decimal.Decimal(mins))*60
+            if decimal.Decimal(ra_split[0]) < 0:
+                hours = -hours
+            ra2 = str(hours) + ' ' + str(mins) + ' ' + "{:.2f}".format(secs)
+            hours = int(dec_deg)
+            mins = int((dec_deg - decimal.Decimal(hours))*60) 
+            secs = ((dec_deg - decimal.Decimal(hours))*60 - decimal.Decimal(mins))*60
+            if decimal.Decimal(dec_split[0]) < 0:
+                hours = -hours
+            dec2 = str(hours) + ' ' + str(mins) + ' ' + "{:.2f}".format(secs)
+            # Print the original and fixed values
+            print ("Original: " + ra + ' ' + dec)
+            print ("Fixed: " + ra2 + ' ' + dec2)
+            # Change the RA and DEC values
+            hdul[0].header['OBJCTRA'] = ra2
+            hdul[0].header['OBJCTDEC'] = dec2
+            # Save the fixed data to a new FITS file
+            hdul.writeto('rdf_'+ img)
+            hdul.close()
+            print ("Radec fixed to " + 'rdf_'+ img)
+
 else:
     print ("Bad argument " + str(sys.argv[1]))
-    print ("Usage: python fitspy.py {list|move|header|coordinates} [file]")
+    print ("Usage: python fitspy.py {list|move|header|filter|coordinates|summary|radecfix} [file]")
     sys.exit()
