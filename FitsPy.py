@@ -21,7 +21,7 @@
 #   python fitspy.py filter *.fit
 #   python fitspy.py summary *.fit
 #   python fitspy.py unprocessed
-#   python fitspy.py decompress *.fit
+#   python fitspy.py decompress [0|1] *.fit
 #   python fitspy.py radecfix *.fit
 #
 
@@ -205,11 +205,17 @@ elif sys.argv[1] == 'header' or sys.argv[1] == 'h':
     imgfiles = glob.glob(imgpath)
     imglist = []
     for img in imgfiles:
+        print ("--")
         print (img)
         hdul = fits.open(img)
-        k = list(hdul[0].header.keys())
-        for x in k:
-            print (x + '=' + str(hdul[0].header[x]))
+        idx = 0
+        for hd in hdul:
+            #print (hd.header)
+            print ('-' + str(idx) + '-')
+            k = list(hd.header.keys())
+            for x in k:
+                print (x + '=' + str(hd.header[x]))
+            idx = idx + 1
 
 #
 # coordinates
@@ -465,10 +471,18 @@ elif sys.argv[1] == 'unprocessed' or sys.argv[1] == 'u':
 # decompress fits files
 #
 elif sys.argv[1] == 'decompress' or sys.argv[1] == 'd':
-    if len(sys.argv) == 2:
+    idx = 2
+    data_index = -1
+    if len(sys.argv) > idx and (sys.argv[idx] == '0' or sys.argv[idx] == '1'):
+        if sys.argv[idx] == '0':
+            data_index = 0
+        else:
+            data_index = 1
+        idx = idx + 1
+    if len(sys.argv) == idx:
         imgpath = "*.fit*"
     else:
-        imgpath = sys.argv[2]
+        imgpath = sys.argv[idx]
     imgfiles = glob.glob(imgpath)
     for img in imgfiles:
         # skip if image name starts with dc_
@@ -479,17 +493,43 @@ elif sys.argv[1] == 'decompress' or sys.argv[1] == 'd':
             print ("File " + 'dc_'+ img + " already exists")
         else:
             print ("Open " + img)
-            hdul = fits.open(img)
-            # Extract the compressed data
-            compressed_data = hdul[1].data
-            # Decompress the data
-            decompressed_data = fits.CompImageHDU(compressed_data).data
-            # Save the decompressed data to a new FITS file
-            hdu = fits.PrimaryHDU(decompressed_data)
-            hdu.writeto('dc_'+ img)
-            hdul.close()
-            print ("Decompressed to " + 'dc_'+ img)
-
+            try:
+                hdul = fits.open(img)
+                if data_index == -1:
+                    if len(hdul) == 1:
+                        data_idx = 0
+                    else:
+                        data_idx = 1
+                else:
+                    data_idx = data_index
+                # Extract the compressed data
+                compressed_data = hdul[data_idx].data
+                # Decompress the data
+                decompressed_data = fits.CompImageHDU(compressed_data).data
+                # Save the decompressed data to a new FITS file
+                hdu = fits.PrimaryHDU(decompressed_data)
+                copy_header_data = False
+                if copy_header_data:
+                    # copy header data
+                    # DOES NOT WORK IN ALL CASES !!!
+                    #print ("Copying header data...")
+                    for hd in hdul:
+                        #print (hd.header)
+                        k = list(hd.header.keys())
+                        for x in k:
+                            try:
+                                if hdu.header[x] != hd.header[x]:
+                                    #print ("Header value " + x + " changed from " + str(hdu.header[x]) + " to " + str(hd.header[x]))
+                                    hdu.header[x] = hd.header[x]
+                            except:
+                                if len(x.strip()) > 0 and len(str(hd.header[x]).strip()) > 0:
+                                    #print ("Added header[" + x + "] = '" + str(hd.header[x]) + "'")
+                                    hdu.header[x] = str(hd.header[x]).strip()
+                hdu.writeto('dc_'+ img)
+                hdul.close()
+                print ("Decompressed to " + 'dc_'+ img)
+            except Exception as e:
+                print("Error occurred while decompressing " + img + ": " + str(e))
 #
 # Fix ra/dec values in files
 #
@@ -568,5 +608,5 @@ elif sys.argv[1] == 'radecfix' or sys.argv[1] == 'r':
         print ("No files needed fixing")
 else:
     print ("Bad argument " + str(sys.argv[1]))
-    print ("Usage: python fitspy.py {list|move|header|filter|coordinates|summary|radecfix} [file]")
+    print ("Usage: python fitspy.py {list|move|header|filter|coordinates|summary|decompress [0|1]|radecfix} [file]")
     sys.exit()
