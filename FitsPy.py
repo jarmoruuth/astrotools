@@ -507,24 +507,8 @@ elif sys.argv[1] == 'decompress' or sys.argv[1] == 'd':
                 # Decompress the data
                 decompressed_data = fits.CompImageHDU(compressed_data).data
                 # Save the decompressed data to a new FITS file
-                hdu = fits.PrimaryHDU(decompressed_data)
-                copy_header_data = False
-                if copy_header_data:
-                    # copy header data
-                    # DOES NOT WORK IN ALL CASES !!!
-                    #print ("Copying header data...")
-                    for hd in hdul:
-                        #print (hd.header)
-                        k = list(hd.header.keys())
-                        for x in k:
-                            try:
-                                if hdu.header[x] != hd.header[x]:
-                                    #print ("Header value " + x + " changed from " + str(hdu.header[x]) + " to " + str(hd.header[x]))
-                                    hdu.header[x] = hd.header[x]
-                            except:
-                                if len(x.strip()) > 0 and len(str(hd.header[x]).strip()) > 0:
-                                    #print ("Added header[" + x + "] = '" + str(hd.header[x]) + "'")
-                                    hdu.header[x] = str(hd.header[x]).strip()
+                # Thanks to Marek Idec for fix to header data
+                hdu = fits.PrimaryHDU(decompressed_data, header=hdul[data_index].header)
                 hdu.writeto('dc_'+ img)
                 hdul.close()
                 print ("Decompressed to " + 'dc_'+ img)
